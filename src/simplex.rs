@@ -1,4 +1,5 @@
 use std::{collections::BTreeSet, iter::FromIterator};
+use num_traits::Num;
 
 /// A simplex is a set of vertices, which we assume to be in increasing order.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -25,19 +26,23 @@ impl<T> Simplex<T> where T: Ord + Clone {
         self.vertices.is_subset(&t.vertices)
     }
 
-    /// The coefficient of the (row t, col self) in the boundary map
-    pub fn boundary_coeff(&self, t: &Self) -> i32 {
+    pub fn boundary_coeff<U: Num>(&self, t: &Self) -> U {
         // If it is not a face, or if the codimension is not 1, then we return 0
         if !t.is_face(self) || self.codim(t) != 1 {
-            0
+            return U::zero();
         // Otherwise, it is (-1)^i, where t is self with the i-th entry removed.
         } else {
-            (-1i32).pow(self.vertices
-                .iter()
-                .enumerate()
-                .filter(|&(_, v)| !t.vertices.contains(v))
-                .nth(0)
-                .unwrap().0 as u32)
+            let k = self.vertices
+            .iter()
+            .enumerate()
+            .filter(|&(_, v)| !t.vertices.contains(v))
+            .nth(0)
+            .unwrap().0;
+            if k % 2 == 0 {
+                U::one()
+            } else {
+                U::zero() - U::one()
+            }
         }
     }
 
