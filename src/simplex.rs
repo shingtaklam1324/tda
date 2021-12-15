@@ -29,14 +29,13 @@ impl<T> Simplex<T> where T: Ord + Clone {
     pub fn boundary_coeff<U: Num>(&self, t: &Self) -> U {
         // If it is not a face, or if the codimension is not 1, then we return 0
         if !t.is_face(self) || self.codim(t) != 1 {
-            return U::zero();
+            U::zero()
         // Otherwise, it is (-1)^i, where t is self with the i-th entry removed.
         } else {
             let k = self.vertices
             .iter()
             .enumerate()
-            .filter(|&(_, v)| !t.vertices.contains(v))
-            .nth(0)
+            .find(|&(_, v)| !t.vertices.contains(v))
             .unwrap().0;
             if k % 2 == 0 {
                 U::one()

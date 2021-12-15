@@ -127,3 +127,17 @@ fn betti_hollow_2_simplex() {
     assert_eq!(k.betti(2), 0);
     assert_eq!(k.betti(3), 0);
 }
+
+#[test]
+fn betti_shape() {
+    // https://en.wikipedia.org/wiki/Betti_number#Betti_numbers_of_a_simplicial_complex
+    let k = SimplicialComplex::from(
+        vec![vec![0], vec![1], vec![2], vec![3],
+             vec![0, 1], vec![0, 2], vec![0, 3], vec![1, 2], vec![2, 3],
+             vec![0, 1, 2]]);
+    // First 4 Betti numbers of the shape
+    assert_eq!(k.betti(0), 1);
+    assert_eq!(k.betti(1), 1);
+    assert_eq!(k.betti(2), 0);
+    assert_eq!(k.betti(3), 0);
+}

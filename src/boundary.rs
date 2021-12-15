@@ -28,4 +28,5 @@ impl<T> SimplicialComplex<T> where T: Ord + Copy {
         let rk1 = if dk1.nrows() * dk1.ncols() == 0 { 0 } else { dk1.rank(1e-5) };
         dk.ncols() - (rk + rk1)
     }
+
 }

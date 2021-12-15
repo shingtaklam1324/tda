@@ -13,16 +13,34 @@ impl<T> SimplicialComplex<T> where T: Ord + Copy {
         let vertices = simplices.iter()
             .map(|s| &s.vertices)
             .flatten()
-            .map(|x| *x)
+            .copied()
             .collect();
         SimplicialComplex { vertices, simplices }
     }
 
+    /// Returns the set of k-simplices in the complex.
     pub fn dim_simplices(&self, k: usize) -> BTreeSet<Simplex<T>> {
         self.simplices.iter()
             .filter(|s| s.dim() == k)
             .cloned()
             .collect()
+    }
+
+    /// The dimension of a simplicial complex is defined to be the largest dimension of any simplex.
+    pub fn dim(&self) -> usize {
+        self.simplices.iter()
+            .map(|s| s.dim())
+            .max()
+            .unwrap_or(0)
+    }
+
+    /// Euler characteristic of a simplicial complex is the alternating sum of the 
+    /// number of simplices in each dimension.
+    pub fn euler(&self) -> isize {
+        (0..=self.dim()).enumerate()
+            .map(|(i, dim)| (-1isize).pow(i as u32) * 
+                self.dim_simplices(dim).len() as isize)
+            .sum()
     }
 }
 
@@ -34,28 +52,28 @@ impl<T> From<Vec<Vec<T>>> for SimplicialComplex<T> where T: Ord + Copy {
     }
 }
 
-impl SimplicialComplex<i32> {
-    pub fn solid(k: usize) -> SimplicialComplex<i32> {
+impl SimplicialComplex<usize> {
+    pub fn solid(k: usize) -> SimplicialComplex<usize> {
         if k == 0 {
             SimplicialComplex::from(vec![vec![0]])
         } else {
             let mut s = SimplicialComplex::solid(k - 1);
             let mut new_simplicies = s.simplices.iter()
-                .map(|s| s.add_vertex(k as i32))
+                .map(|s| s.add_vertex(k))
                 .collect();
             s.simplices.append(&mut new_simplicies);
-            s.simplices.insert(Simplex::from_iter([k as i32]));
-            s.vertices.insert(k as i32);
+            s.simplices.insert(Simplex::from_iter([k]));
+            s.vertices.insert(k);
             s
         }
     }
 
-    pub fn hollow(k: usize) -> SimplicialComplex<i32> {
+    pub fn hollow(k: usize) -> SimplicialComplex<usize> {
         if k == 0 {
             panic!("Cannot make a hollow simplicial complex of dimension 0");
         }
         let mut s = SimplicialComplex::solid(k);
-        s.simplices.remove(&Simplex::from_iter(0..=(k as i32)));
+        s.simplices.remove(&Simplex::from_iter(0..=(k)));
         s
     }
 }

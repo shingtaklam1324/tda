@@ -1,6 +1,7 @@
 pub mod simplex;
 pub mod simplicial_complex;
 pub mod boundary;
+pub mod vietoris_rips;
 
 // #[cfg(test)]
 // mod tests {
