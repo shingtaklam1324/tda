@@ -5,10 +5,14 @@ use nalgebra::DMatrix;
 
 use super::simplex::Simplex;
 use super::simplicial_complex::SimplicialComplex;
+use super::filtration::Filtration;
 
 fn vr_simplex_step(adj: &DMatrix<bool>, simplices: &BTreeSet<Simplex<usize>>, dim: bool) -> BTreeSet<Simplex<usize>> {
     let mut new_simplices = BTreeSet::new();
-    let d = simplices.iter().map(|s| s.dim()).max().unwrap();
+    let d = simplices.iter()
+                           .map(|s| s.dim())
+                           .max()
+                           .unwrap();
     for simplex in simplices {
         if dim && simplex.dim() < d {
             continue;
@@ -38,12 +42,14 @@ fn vr_simplices(adj: &DMatrix<bool>, simplices: BTreeSet<Simplex<usize>>, dim: b
 
 fn vr_simplicial_complex(adj: &DMatrix<bool>) -> SimplicialComplex<usize> {
     // Insert all 0-simplices
-    let simplices = (0..adj.nrows()).map(|i| Simplex::from_iter([i])).collect();
+    let simplices = (0..adj.nrows())
+        .map(|i| Simplex::from_iter([i]))
+                       .collect();
     SimplicialComplex::new(vr_simplices(adj, simplices, true))
 }
 
 /// Given a distance matrix, and epsilon, return the Vietoris-Rips complex.
-pub fn vietoris_rips(dist: &DMatrix<f64>, epsilon: f64) -> SimplicialComplex<usize> {
+pub fn vietoris_rips_simplicial_complex(dist: &DMatrix<f64>, epsilon: f64) -> SimplicialComplex<usize> {
     let adj = dist.map(|x| x <= epsilon);
     vr_simplicial_complex(&adj)
 }
@@ -52,9 +58,23 @@ pub fn vietoris_rips(dist: &DMatrix<f64>, epsilon: f64) -> SimplicialComplex<usi
 /// VR complex for epsilon.
 /// 
 /// We can do this as any simplex in VR_delta must be a simplex in VR_epsilon.
-pub fn vietoris_rips_step(dist: &DMatrix<f64>, epsilon: f64, k: SimplicialComplex<usize>) -> SimplicialComplex<usize> {
+pub fn vietoris_rips_simplicial_complex_step(dist: &DMatrix<f64>, epsilon: f64, k: SimplicialComplex<usize>) -> SimplicialComplex<usize> {
     let adj = dist.map(|x| x <= epsilon);
     // When we increase epsilon, we can't only add max dimension simplices, we also need to add
     // lower dimension simplices as well.
     SimplicialComplex::new(vr_simplices(&adj, k.simplices, false))
+}
+
+pub fn vietoris_rips_filtration(dist: &DMatrix<f64>, epsilons: Vec<f64>) -> Filtration<usize> {
+    // The 0-simplices are always in the filtration.
+    let init = SimplicialComplex::new((0..dist.nrows())
+                                     .map(|i| Simplex::from_iter([i]))
+                                     .collect());
+    Filtration::new(epsilons.iter()
+        .fold((vec![], init), |(filtration, k), epsilon| {
+            let k2 = vietoris_rips_simplicial_complex_step(dist, *epsilon, k.clone());
+            let mut f = filtration.clone();
+            f.push(k);
+            (f, k2)
+        }).0)
 }

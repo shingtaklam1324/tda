@@ -9,3 +9,4 @@ Some basic TDA functionality implemented in Rust. So far, there is
 - Euler characteristic
 - Vietoris-Rips complex
 - "Smith Normal Form" for matrices
+- Filtrations
