@@ -6,3 +6,5 @@ Some basic TDA functionality implemented in Rust. So far, there is
 - Simplicial Complexes
 - Boundary map of a simplicial complex
 - Betti numbers
+- Euler characteristic
+- Vietoris-Rips complex
