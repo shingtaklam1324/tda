@@ -20,8 +20,11 @@ fn some_matrix1() {
         0., 0., 1.
     ];
     let sm = Smith::of(&m);
-    println!("{}", sm.result());
-    // println!("{}", sm.col_matrix() * sm.result() * sm.row_matrix());
+    let d = sm.result();
+    let c = sm.col_matrix();
+    let r = sm.row_matrix();
+    println!("{}", d);
+    println!("{}", r * m * c);
 }
 
 #[test]
@@ -67,4 +70,15 @@ fn some_matrix4() {
     sm.row_ops().inv().row_op(&mut d);
     sm.col_ops().inv().col_op(&mut d);
     println!("{}", d);
+}
+
+#[test]
+fn rectangle() {
+    let m = dmatrix![
+        1., 2., 3., 4.;
+        5., 6., 7., 8.;
+        9., 10., 11., 12.
+    ];
+    let sm = Smith::of(&m);
+    println!("{}", sm.result());
 }

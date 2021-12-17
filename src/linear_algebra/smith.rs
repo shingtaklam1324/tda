@@ -1,6 +1,15 @@
 use super::operations::{Operation, Operations};
 use nalgebra::{DMatrix, ComplexField};
 
+/// Turn an m by n matrix into the following form
+/// 
+/// ```text
+/// ( I_r | 0 )
+/// ( 0   | 0 )
+/// ```
+/// 
+/// where r is the rank of the original matrix. We also store the row and
+/// column operations required to do this.
 #[derive(Debug)]
 pub struct Smith<T> {
     row_ops: Operations<T>,
@@ -85,12 +94,23 @@ impl<T: ComplexField + Copy> Smith<T> {
         &self.result
     }
 
-    // Probably wrong?
-    // pub fn row_matrix(&self) -> DMatrix<T> {
-    //     self.row_ops.row_matrix(self.result.nrows())
-    // }
+    // if sm = Smith::of(m), r = sm.row_matrix(), c = sm.col_matrix(),
+    // then r * m * c = sm.result()
+    pub fn row_matrix(&self) -> DMatrix<T> {
+        self.row_ops.row_matrix(self.result.nrows())
+    }
 
-    // pub fn col_matrix(&self) -> DMatrix<T> {
-    //     self.col_ops.col_matrix(self.result.ncols())
-    // }
+    pub fn col_matrix(&self) -> DMatrix<T> {
+        self.col_ops.col_matrix(self.result.ncols())
+    }
+
+    // if sm = Smith::of(m), ri = sm.row_inv_matrix(), ci = sm.col_inv_matrix(),
+    // then m = ri * sm.result() * ci
+    pub fn row_inv_matrix(&self) -> DMatrix<T> {
+        self.row_ops.inv().row_matrix(self.result.nrows())
+    }
+
+    pub fn col_inv_matrix(&self) -> DMatrix<T> {
+        self.col_ops.inv().col_matrix(self.result.ncols())
+    }
 }
